@@ -5,7 +5,7 @@ to convert scanned court documents (i.e., PDF or TIF files) to
 computer-readable text.
 The script uses optical character recognition (OCR).  Those
 scanned files are first converted to png images, and then
-those images are converted to text.
+those images are converted to text. 
 The final text is stored both in an R data format
 (`converted-results.Rdata`) and as a csv (`converted-results.csv`).
 
