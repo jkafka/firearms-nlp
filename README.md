@@ -1,7 +1,7 @@
 # How to digitize scanned documents into computer-readable text
 
 Many interesting documents are available only as photocopies.  These
-cannot be directly used on computer with ordinary text processing
+cannot be directly searched, analyzed, or processed on a computer with ordinary text
 tools.  This repository contains public code, designed to convert such
 documents into machine-readable text.  It is designed with the
 Washington State court records in mind, but it may be useful for many
