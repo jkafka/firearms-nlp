@@ -1,13 +1,20 @@
 # How to digitize scanned documents into computer-readable text
 
-This document explains how to use the script `pdf2txt.R`
-to convert scanned court documents (i.e., PDF or TIF files) to
-computer-readable text.
-The script uses optical character recognition (OCR).  Those
-scanned files are first converted to png images, and then
-those images are converted to text. 
-The final text is stored both in an R data format
-(`converted-results.Rdata`) and as a csv (`converted-results.csv`).
+Many interesting documents are available only as photocopies.  These
+cannot be directly used on computer with ordinary text processing
+tools.  This repository contains public code, designed to convert such
+documents into machine-readable text.  It is designed with the
+Washington State court records in mind, but it may be useful for many
+other kinds of documents as well, as long as these are typewritten,
+not handwritten.
+
+The central part of the the toolkit is an R-script `pdf2txt.R` that
+does the actual conversion.  The scanned documents should be of either
+PDF or TIF format.  The script uses optical character recognition
+(OCR).  Those scanned files are first converted to png images, and
+then those images are converted to text.  The final text is stored
+both in an R data format (`converted-results.Rdata`) and as a csv
+(`converted-results.csv`).
 
 
 ## The script
