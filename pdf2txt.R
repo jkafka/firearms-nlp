@@ -15,13 +15,14 @@ library(tesseract)
 printLevel <- 2
 
 ## output file name.  The final data frame will be stored in this file
-## in the current folder.
+## in the current folder.  Both .Rdat and csv will be saved.
+outFName.Rdata <- "converted-results.Rdata"
+outFName.csv <- "converted-results.csv"
 ## There will also be images/converted text in PNGDIR and TXTDIR
-outFName <- "converted-results.Rdat"
 
 ## How many cases to sample: 0 = everything
 ## This is useful for troubleshooting, e.g. set 'sample <- 10'
-sample <- 0
+sample <- 5
 
 ## Folders:
 ## DATADIR: the main folder where all the data is
@@ -32,22 +33,25 @@ sample <- 0
 ##         It is not needed for the final data file, but may be handy
 ##         for troubleshooting, or if you need the converted texts for
 ##         other purposes
-DATADIR <- "/home/siim/bigdata/firearms-nlp/"
+DATADIR <- "/home/siim/bigdata/firearms-nlp"
 CASEDIR <- file.path(DATADIR, "court-docs-scanned")
 PNGDIR <- file.path(DATADIR, "converted-pngs")
 TXTDIR <- file.path(DATADIR, "converted-text")
 
 ## ---------- end of the adjustment parameters ----------
 
-## ---------- Do you run if from command line?  Ignore if you do not
+## ---------- Ignore this block if you do not use command line ----------
 if(require(argparser)) {
    args <- argparser::arg_parser("Convert all pdf/tif case images to text") %>%
-      argparser::add_argument("--sample", "how many cases to sample, 0 = all", 0L) %>%
+      argparser::add_argument("--sample", "how many cases to sample, 0 = all", sample) %>%
       argparser::add_argument("--printLevel", "print level, larger number prints more", 1L) %>%
       argparser::parse_args()
    printLevel <- args$printLevel
    sample <- args$sample
 }
+## ---------- end of command line-only block
+
+##
 if(printLevel > 0) {
    cat("sample", sample, "cases\n")
 }
@@ -60,17 +64,12 @@ CASEDIR) %>%
    stop()      
 }
 fNames <- list.files(path = CASEDIR, recursive = TRUE, full.names = TRUE)
-nExposure <- grep("Exposure Cases", fNames) %>%
-   length()
-nOutcome <- grep("Outcome Cases", fNames) %>%
-   length()
 nPdf <- grep(r"(.pdf$)", tolower(fNames)) %>%
    length()
 nTif <- grep(r"(.tiff?$)", tolower(fNames)) %>%
    length()
 if(printLevel > 0) {
    cat("Found", length(fNames), "files in", CASEDIR, "\n",
-       nExposure, "exposure cases and", nOutcome, "outcome cases\n",
        nPdf, "pdf files and", nTif, "tif files\n")
 }
 
@@ -96,7 +95,8 @@ for(i in seq(along.with = fNames)) {
    if(printLevel > 1) {
       cat(i, "/", length(fNames), ": ", path, "\n", sep = "")
    }
-   subfolder <- basename(dirname(path))
+   subfolder <- sub(paste0(CASEDIR, "/"), "", dirname(path))
+                           # subfolder--w/o CASEDIR
    filename <- basename(path)
    ## Create folder paths
    pngFolder <- dirname(path) %>%
@@ -107,8 +107,6 @@ for(i in seq(along.with = fNames)) {
       dir.create(recursive = TRUE, showWarning = FALSE)
    txtFolder %>%
       dir.create(recursive = TRUE, showWarning = FALSE)
-   ## Exposure or outcome cases
-   type <- if(grepl("exposure cases", tolower(path))) "exposure" else "outcome"
    caseText <- NULL
    if (grepl(".pdf$", path)) {
       ## Load the pdf page-by-page.  This is in order to avoid
@@ -211,14 +209,16 @@ for(i in seq(along.with = fNames)) {
    results <- results %>%
       rbind(
          data.frame(subfolder = subfolder, filename = filename, pages = nPages,
-                    type = type,
                     text = caseText)
       )
 }
 
-save(results, file = outFName)
+save(results, file = outFName.Rdata)
+write.csv(results, file = outFName.csv,
+          na = "", row.names = FALSE)
 if(printLevel > 0) {
-   cat(nrow(results), "pages saved to", outFName, "\n")
+   cat(nrow(results), "pages saved as data frame 'results' to", outFName.Rdata, "\n")
+   cat("also save to", outFName.csv, "\n")
 }
 if(length(errors) > 0) {
    cat("There were errors:\n\n",
